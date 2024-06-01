@@ -35,6 +35,10 @@ function create_session_table() {
 add_action('wp_login', 'add_user_session', 10, 2);
 
 function add_user_session($user_login, $user) {
+    if (!is_user_logged_in()) {
+        return; // Exit if the user is not logged in
+    }
+
     global $wpdb;
     $user_id = $user->ID;
     $table_name = $wpdb->prefix . 'active_sessions';
@@ -54,6 +58,10 @@ function add_user_session($user_login, $user) {
 add_action('wp_logout', 'remove_user_session');
 
 function remove_user_session() {
+    if (!is_user_logged_in()) {
+        return; // Exit if the user is not logged in
+    }
+
     global $wpdb;
     $user_id = get_current_user_id();
     $table_name = $wpdb->prefix . 'active_sessions';
