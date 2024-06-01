@@ -101,3 +101,66 @@ require_once('path_to_wp/wp-load.php');
 ```
 
 This setup allows you to handle user sessions on custom pages within a WordPress context, ensuring that you can manage logins and sessions effectively without creating a plugin.
+
+
+
+To create an installation script for setting up the `wp_active_sessions` table within the WordPress environment, you can create a PHP script that checks if the table exists and, if not, creates it. This script can be run as part of a custom page or a plugin activation routine.
+
+Here’s a step-by-step script for this purpose:
+
+### PHP Installation Script
+
+```php
+<?php
+require_once('wp-load.php'); // Path to wp-load.php to initialize WordPress environment
+
+function create_session_table() {
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'active_sessions';
+
+    // Check if the table already exists
+    if ($wpdb->get_var("SHOW TABLES LIKE '{$table_name}'") != $table_name) {
+        // Table does not exist, so create it
+        $charset_collate = $wpdb->get_charset_collate();
+
+        $sql = "CREATE TABLE $table_name (
+            session_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            user_id BIGINT UNSIGNED NOT NULL,
+            session_token VARCHAR(255),
+            login_timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+            last_active_timestamp DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES {$wpdb->prefix}users(ID)
+        ) $charset_collate;";
+
+        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+        dbDelta($sql);
+        
+        echo "Table created successfully.";
+    } else {
+        echo "Table already exists.";
+    }
+}
+
+// Call the function to check and create the table
+create_session_table();
+?>
+```
+
+### Explanation
+
+1. **WordPress Initialization**: The script starts by including `wp-load.php` to bootstrap WordPress, which provides access to WordPress functions and the global `$wpdb` object.
+
+2. **Function Definition**: `create_session_table()` function checks if the table already exists in the WordPress database using a `SHOW TABLES LIKE` SQL statement. It ensures you don't attempt to recreate the table if it's already there.
+
+3. **Table Creation**: If the table does not exist, the script constructs a SQL query to create it. The `$wpdb->prefix` is used to prepend the table prefix defined in your WordPress configuration (usually `wp_`), making sure it integrates neatly with the existing WordPress database structure.
+
+4. **Executing SQL**: The `dbDelta()` function from WordPress's upgrade script handles the SQL execution. This function is robust and manages SQL table creation and updates efficiently.
+
+5. **Running the Script**: This script is intended to be run once manually, or it could be part of a larger plugin activation hook or theme setup routine.
+
+### Usage
+
+- **Manual Execution**: Save this script as `create_table.php` in your WordPress directory and access it directly via your browser to run it once.
+- **Integration**: Alternatively, incorporate this script into a plugin's activation hook or a theme's setup function to automate the process when the theme or plugin is activated.
+
+This approach ensures that your custom session management table integrates well with any WordPress installation and can be managed within the WordPress ecosystem.
