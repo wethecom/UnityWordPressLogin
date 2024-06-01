@@ -15,11 +15,13 @@ function api_get_online_hosts() {
     return new WP_REST_Response($hosts, 200);
 }
 
-// Register REST API route
 function register_online_hosts_routes() {
     register_rest_route('api/v1', '/online-hosts/', array(
         'methods' => 'GET',
         'callback' => 'api_get_online_hosts',
+        'permission_callback' => function () {
+            return is_user_logged_in();
+        }
     ));
 }
 add_action('rest_api_init', 'register_online_hosts_routes');
