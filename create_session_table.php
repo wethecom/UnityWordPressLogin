@@ -1,5 +1,4 @@
 <?php
-//this is indpendent to wordpress and a standlaone systeme ...you can direguard this file
 require_once('wp-load.php'); // Ensure this path correctly points to wp-load.php
 
 function create_session_table() {
