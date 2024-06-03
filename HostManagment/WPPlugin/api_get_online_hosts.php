@@ -6,11 +6,16 @@ Version: 1.0
 Author: Your Name
 */
 
-// Function to output online hosts as JSON
+// Function to output detailed online hosts as JSON
 function api_get_online_hosts() {
     global $wpdb;
     $table_name = $wpdb->prefix . "online_hosts";
-    $hosts = $wpdb->get_results("SELECT host_name FROM $table_name WHERE status = 'online'", ARRAY_A);
+    $hosts = $wpdb->get_results("SELECT host_name, players_current, players_max, tags, last_online, banner_url, server_address, server_port FROM $table_name WHERE status = 'online'", ARRAY_A);
+
+    // Process tags for JSON output
+    foreach ($hosts as $key => $host) {
+        $hosts[$key]['tags'] = explode(',', $host['tags']);  // Convert tags string back to array
+    }
 
     return new WP_REST_Response($hosts, 200);
 }
@@ -25,4 +30,5 @@ function register_online_hosts_routes() {
     ));
 }
 add_action('rest_api_init', 'register_online_hosts_routes');
+
 ?>
