@@ -1,20 +1,11 @@
 <?php
 /*
 Plugin Name: Display Online Hosts
-Description: Displays a list of online hosts managed by the Online Hosts Manager plugin.
+Description: Displays a list of online hosts managed by the Online Hosts Manager plugin  shortcode [display_online_hosts].
 Version: 1.0
 Author: Your Name
 */
 
-// Function to display online hosts
-
-ChatGPT
-To ensure that the function display_online_hosts() checks if someone is logged in before displaying the online hosts, you can modify the function to include a check for user authentication. If the user is not logged in, you can either return a message or prevent the display of the host list.
-
-Here's how you can add a login check to your script:
-
-php
-Copy code
 function display_online_hosts() {
     if (!is_user_logged_in()) {
         return 'You must be logged in to see the online hosts.';
@@ -38,5 +29,4 @@ function display_online_hosts() {
 }
 
 add_shortcode('display_online_hosts', 'display_online_hosts');
-
 ?>

@@ -1,7 +1,7 @@
 <?php
 /*
-Plugin Name: Display Online Hosts API
-Description: Provides an API endpoint to display online hosts and allows Unity to read the list.
+Plugin Name: Get Online Hosts API
+Description: Provides an API endpoint at /wp-json/api/v1/online-hosts/ to display online hosts as JSON and allows Unity to read the list. Requires user login for access.
 Version: 1.0
 Author: Your Name
 */
