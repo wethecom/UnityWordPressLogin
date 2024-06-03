@@ -6,7 +6,6 @@ Version: 1.0
 Author: Your Name
 */
 
-// Activation hook for creating database table
 function ohm_create_table() {
     global $wpdb;
     $table_name = $wpdb->prefix . "online_hosts";
@@ -15,42 +14,43 @@ function ohm_create_table() {
     $sql = "CREATE TABLE $table_name (
         id mediumint(9) NOT NULL AUTO_INCREMENT,
         host_name text NOT NULL,
+        players_current int DEFAULT 0,
+        players_max int DEFAULT 100,
         status tinytext NOT NULL,
+        tags text,
+        banner_url text,
+        server_address varchar(255),
+        server_port smallint,
+        last_online datetime DEFAULT CURRENT_TIMESTAMP,  // Timestamp of the last update
         PRIMARY KEY  (id)
     ) $charset_collate;";
 
     require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
     dbDelta( $sql );
 }
-register_activation_hook( __FILE__, 'ohm_create_table' );
 
-// REST API endpoint to handle data from Unity
-function ohm_register_routes() {
-    register_rest_route( 'ohm/v1', '/update/', array(
-        'methods' => 'POST',
-        'callback' => 'ohm_update_host_status',
-    ));
-}
-add_action( 'rest_api_init', 'ohm_register_routes' );
-
-// Callback to update or add host status
 function ohm_update_host_status( $request ) {
     global $wpdb;
     $data = $request->get_json_params();
     $table_name = $wpdb->prefix . "online_hosts";
 
-    // Check if host exists and update or insert accordingly
+    $update_data = [
+        'status' => $data['status'],
+        'players_current' => $data['players_current'],
+        'players_max' => $data['players_max'],
+        'tags' => implode(',', $data['tags']),
+        'banner_url' => $data['banner_url'],
+        'server_address' => $data['server_address'],
+        'server_port' => $data['server_port'],
+        'last_online' => current_time('mysql', 1)  // Use WordPress function to get the current time
+    ];
+
     $exists = $wpdb->get_var( $wpdb->prepare("SELECT id FROM $table_name WHERE host_name = %s", $data['host_name']));
     if ($exists) {
-        $wpdb->update($table_name, ['status' => $data['status']], ['host_name' => $data['host_name']]);
+        $wpdb->update($table_name, $update_data, ['host_name' => $data['host_name']]);
     } else {
-        $wpdb->insert($table_name, [
-            'host_name' => $data['host_name'],
-            'status' => $data['status']
-        ]);
+        $wpdb->insert($table_name, array_merge(['host_name' => $data['host_name']], $update_data));
     }
 
     return new WP_REST_Response('Host status updated', 200);
 }
-
-?>
